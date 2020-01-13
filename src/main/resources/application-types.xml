@@ -1,9 +1,68 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
   <types:catalog>
-    <types:type name="Vehicle" format="java">
+    <types:type name="Vehicle" format="json">
+      <types:shape format="weave" example="examples/vehicle.json"><![CDATA[%dw 2.0
+
+type Vehicle = {|
+  VIN: String, 
+  Make: String, 
+  Model: String, 
+  Registration: String, 
+  Color: String, 
+  isAssigned: Boolean
+|} {"example": "{\\\"VIN\\\":\\\"12fd34gh567890hg2\\\",\\\"Make\\\":\\\"Dodge\\\",\\\"Model\\\":\\\"Durango\\\",\\\"Registration\\\":\\\"LHD3914\\\",\\\"Color\\\":\\\"Grey\\\",\\\"isAssigned\\\":true}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="CSV" format="csv">
+      <types:shape format="weave" example="examples/csv example-1.csv"><![CDATA[%dw 2.0
+
+type CSV = Array<{|  VIN: String,   " Make": String,   " Model": String,   " Color": String,   " Registration": String|}>
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+        <types:property name="separator" value=","/>
+      </types:properties>
+    </types:type>
+    <types:type name="SFVehicle" format="java">
       <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
 type: string]]></types:shape>
     </types:type>
   </types:catalog>
+  <types:enrichment select="#7e446dee-2999-4e5d-8dd8-40e7cc05cfbd">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="Vehicle"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#3927fd4d-3764-49a9-a3cc-85fc3e329742">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="Vehicle"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="CSV"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#656c5862-7e52-441a-aaef-c3561ea06708">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="Vehicle"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
 </types:mule>
