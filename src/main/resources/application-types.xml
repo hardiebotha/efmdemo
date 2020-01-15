@@ -18,7 +18,7 @@ type Vehicle = {|
     <types:type name="CSV" format="csv">
       <types:shape format="weave" example="examples/csv example-1.csv"><![CDATA[%dw 2.0
 
-type CSV = Array<{|  VIN: String,   " Make": String,   " Model": String,   " Color": String,   " Registration": String|}>
+type CSV = Array<{|  VIN: String,   Make: String,   Model: String,   Color: String,   Registration: String|}>
 
 ]]></types:shape>
       <types:properties>

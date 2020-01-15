@@ -53,20 +53,19 @@ payload]]]></file:content>
 	<flow name="efm-demoFlow1" doc:id="a76aba61-436f-4b4b-ab33-4bbd4fb95477" >
 		<http:listener doc:name="/csv" doc:id="f5883cb6-3f5e-45f7-b4ae-aa776ad760a6" config-ref="HTTP_Listener_config" path="csv"/>
 		<file:read doc:name="Read" doc:id="a7d85742-fd18-4c7f-ba9c-22bb6be966e9" config-ref="File_Config" path="D:\Downloads\Mulesoft\Output\OutputFile.csv"/>
+		<logger level="INFO" doc:name="Logger" doc:id="a6371577-2728-4141-a176-31e5048c0479" message="#[payload]"/>
 		<ee:transform doc:name="Transform Message" doc:id="150b85a0-9deb-4d11-afdd-8a6c9147819b" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
-output application/csv headerLineNumber = 0 , header = true , separator = ","
+output application/xml
 ---
-payload map ( payload01 , indexOfPayload01 ) -> {
-	VIN: payload01.VIN,
-	Make: payload01.Make,
-	Model: payload01.Model,
-	Color: payload01.Color,
-	Registration: payload01.Registration
-}]]></ee:set-payload>
+Vehicles: {(
+	payload map ( payload01 , indexOfPayload01 ) -> {
+		"Vehicle$(indexOfPayload01)": payload01
+	}
+)}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<logger level="INFO" doc:name="Logger" doc:id="cf37d54a-72d7-4c8f-a5b3-5230e246edc4" message="#[payload]"/>
+		<logger level="INFO" doc:name="Logger" doc:id="66bdc975-3aaa-4859-996f-1f35faf34b25" message="#[payload]"/>
 	</flow>
 </mule>
