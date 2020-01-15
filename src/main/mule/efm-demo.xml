@@ -13,47 +13,9 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="5fb6e606-118d-46cc-ad54-a8afa9245126" >
 		<http:listener-connection host="0.0.0.0" port="8082" />
 	</http:listener-config>
-	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="52077d7e-015b-49e8-a715-e5ef4270ee5f" >
-		<salesforce:cached-basic-connection username="hardie@efmdemo.com" password="2mN7PU2cMr56*4u" securityToken="nWKUB7o1ownnacjB5FB6QfoZD" />
-	</salesforce:sfdc-config>
-	<file:config name="File_Config" doc:name="File Config" doc:id="793e0d46-fad8-4d8c-9ac5-90da479b7fb9" >
-		<file:connection workingDir="D:\Downloads\Mulesoft\Output" />
-	</file:config>
 	<s3:config name="Amazon_S3_Configuration" doc:name="Amazon S3 Configuration" doc:id="5138cc6b-a857-44c8-b23a-15958aeb9748" >
 		<s3:basic-connection accessKey="AKIAV663W64TBG2RV7RB" secretKey="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" region="US_EAST_2"/>
 	</s3:config>
-	<flow name="efm-demo-sfdc2csv" doc:id="0eb05d80-4016-4dea-a941-b02984eb4986" >
-		<http:listener doc:name="/salesforcedata" doc:id="424837de-a91d-4313-afea-30748baa2e05" config-ref="HTTP_Listener_config" path="salesforcedata"/>
-		<salesforce:query doc:name="Query" doc:id="656c5862-7e52-441a-aaef-c3561ea06708" config-ref="Salesforce_Config">
-			<salesforce:salesforce-query >SELECT  VIN__c, Make__c, Model__c, Registration__c, Color__c, Currently_assigned__c from VEHICLE__c</salesforce:salesforce-query>
-		</salesforce:query>
-		<logger level="INFO" doc:name="Logger" doc:id="86451b61-da35-4704-a224-5952e267674b" message="#[%dw 2.0 
-output application/json
----
-payload]" />
-		<ee:transform doc:name="Transform Message" doc:id="7e446dee-2999-4e5d-8dd8-40e7cc05cfbd">
-			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-output application/csv headerLineNumber = 0 , header = true , separator = ","
----
-payload map ( payload01 , indexOfPayload01 ) -> {
-	"VIN": payload01.VIN__c default "",
-	"Make": payload01.Make__c default "",
-	"Model": payload01.Model__c default "",
-	"Color": (payload01.Color__c default ""),
-	"Registration": payload01.Registration__c default ""
-}]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<logger level="INFO" doc:name="Logger" doc:id="3c5262ad-b8bf-49ec-9ce7-abea241d6d5e" message="#[payload]"/>
-		<file:write doc:name="Write" doc:id="3927fd4d-3764-49a9-a3cc-85fc3e329742" config-ref="File_Config" path="D:\Downloads\Mulesoft\Output\OutputFile.csv">
-			<file:content ><![CDATA[#[%dw 2.0
-output application/csv
----
-payload]]]></file:content>
-		</file:write>
-		<logger level="INFO" doc:name="Logger" doc:id="3c8f0260-134b-41c4-a88c-ed9bc6d9deba" />
-	</flow>
 	<flow name="efm-demo-s3csv2json" doc:id="a76aba61-436f-4b4b-ab33-4bbd4fb95477" >
 		<http:listener doc:name="/csv" doc:id="f5883cb6-3f5e-45f7-b4ae-aa776ad760a6" config-ref="HTTP_Listener_config" path="csv"/>
 		<s3:get-object doc:name="Get object" doc:id="a4ba7528-0f43-4606-a824-f1e12977a3f6" config-ref="Amazon_S3_Configuration" bucketName="hardie-efmdemo" key="Data_Folder/OutputFile.csv"/>
@@ -67,9 +29,5 @@ payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<logger level="INFO" doc:name="Logger" doc:id="66bdc975-3aaa-4859-996f-1f35faf34b25" message="#[payload]"/>
-	</flow>
-	<flow name="efm-demo-csv-as-db" doc:id="cd9e0e4c-28cc-4cd8-ad99-396b18b61421" >
-		<http:listener doc:name="Listener" doc:id="dfe4630e-2fa2-41ce-a293-cf7deb98822a" config-ref="HTTP_Listener_config" path="/csv2"/>
-		<logger level="INFO" doc:name="Logger" doc:id="35a231bb-4623-4e75-b9ea-03ee69aacbc8" />
 	</flow>
 </mule>
