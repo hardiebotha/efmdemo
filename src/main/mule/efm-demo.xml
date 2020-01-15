@@ -54,20 +54,16 @@ payload]]]></file:content>
 		</file:write>
 		<logger level="INFO" doc:name="Logger" doc:id="3c8f0260-134b-41c4-a88c-ed9bc6d9deba" />
 	</flow>
-	<flow name="efm-demo-csv2xml" doc:id="a76aba61-436f-4b4b-ab33-4bbd4fb95477" >
+	<flow name="efm-demo-s3csv2json" doc:id="a76aba61-436f-4b4b-ab33-4bbd4fb95477" >
 		<http:listener doc:name="/csv" doc:id="f5883cb6-3f5e-45f7-b4ae-aa776ad760a6" config-ref="HTTP_Listener_config" path="csv"/>
 		<s3:get-object doc:name="Get object" doc:id="a4ba7528-0f43-4606-a824-f1e12977a3f6" config-ref="Amazon_S3_Configuration" bucketName="hardie-efmdemo" key="Data_Folder/OutputFile.csv"/>
 		<logger level="INFO" doc:name="Logger" doc:id="a6371577-2728-4141-a176-31e5048c0479" message="#[payload]"/>
 		<ee:transform doc:name="Transform Message" doc:id="150b85a0-9deb-4d11-afdd-8a6c9147819b" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
-output application/xml
+output application/json
 ---
-Vehicles: {(
-	payload map ( payload01 , indexOfPayload01 ) -> {
-		"Vehicle$(indexOfPayload01)": payload01
-	}
-)}]]></ee:set-payload>
+payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<logger level="INFO" doc:name="Logger" doc:id="66bdc975-3aaa-4859-996f-1f35faf34b25" message="#[payload]"/>
