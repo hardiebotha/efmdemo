@@ -37,7 +37,7 @@ type: string]]></types:shape>
     <types:processor-declaration>
       <types:output-event>
         <types:message>
-          <types:payload type="Vehicle"/>
+          <types:payload type="CSV"/>
         </types:message>
       </types:output-event>
     </types:processor-declaration>
@@ -63,6 +63,20 @@ type: string]]></types:shape>
           <types:payload type="Vehicle"/>
         </types:message>
       </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#150b85a0-9deb-4d11-afdd-8a6c9147819b">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="CSV"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="CSV"/>
+        </types:message>
+      </types:output-event>
     </types:processor-declaration>
   </types:enrichment>
 </types:mule>

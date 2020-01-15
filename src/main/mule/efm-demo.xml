@@ -18,39 +18,55 @@ http://www.mulesoft.org/schema/mule/rds http://www.mulesoft.org/schema/mule/rds/
 	<file:config name="File_Config" doc:name="File Config" doc:id="793e0d46-fad8-4d8c-9ac5-90da479b7fb9" >
 		<file:connection workingDir="D:\Downloads\Mulesoft\Output" />
 	</file:config>
-	<flow name="efm-demoFlow" doc:id="0eb05d80-4016-4dea-a941-b02984eb4986" >
-		<http:listener doc:name="Listener" doc:id="424837de-a91d-4313-afea-30748baa2e05" config-ref="HTTP_Listener_config" path="efmdemo"/>
+	<flow name="efm-demo-sfdc2csv" doc:id="0eb05d80-4016-4dea-a941-b02984eb4986" >
+		<http:listener doc:name="/salesforcedata" doc:id="424837de-a91d-4313-afea-30748baa2e05" config-ref="HTTP_Listener_config" path="salesforcedata"/>
 		<salesforce:query doc:name="Query" doc:id="656c5862-7e52-441a-aaef-c3561ea06708" config-ref="Salesforce_Config">
 			<salesforce:salesforce-query >SELECT  VIN__c, Make__c, Model__c, Registration__c, Color__c, Currently_assigned__c from VEHICLE__c</salesforce:salesforce-query>
 		</salesforce:query>
 		<logger level="INFO" doc:name="Logger" doc:id="86451b61-da35-4704-a224-5952e267674b" message="#[%dw 2.0 
 output application/json
 ---
-{}]" />
+payload]" />
 		<ee:transform doc:name="Transform Message" doc:id="7e446dee-2999-4e5d-8dd8-40e7cc05cfbd">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
-output application/json
+output application/csv headerLineNumber = 0 , header = true , separator = ","
 ---
-[
-	{
-		VIN: payload.VIN__c,
-		Make: payload.Make__c,
-		Model: payload.Model__c,
-		Registration: payload.Registration__c,
-		Color: payload.Color__c,
-		isAssigned: payload.Currently_Assigned__c
-	}
-]]]></ee:set-payload>
+payload map ( payload01 , indexOfPayload01 ) -> {
+	"VIN": payload01.VIN__c default "",
+	"Make": payload01.Make__c default "",
+	"Model": payload01.Model__c default "",
+	"Color": (payload01.Color__c default ""),
+	"Registration": payload01.Registration__c default ""
+}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="3c5262ad-b8bf-49ec-9ce7-abea241d6d5e" message="#[payload]"/>
 		<file:write doc:name="Write" doc:id="3927fd4d-3764-49a9-a3cc-85fc3e329742" config-ref="File_Config" path="D:\Downloads\Mulesoft\Output\OutputFile.csv">
 			<file:content ><![CDATA[#[%dw 2.0
 output application/csv
 ---
-{}
-]]]></file:content>
+payload]]]></file:content>
 		</file:write>
 		<logger level="INFO" doc:name="Logger" doc:id="3c8f0260-134b-41c4-a88c-ed9bc6d9deba" />
+	</flow>
+	<flow name="efm-demoFlow1" doc:id="a76aba61-436f-4b4b-ab33-4bbd4fb95477" >
+		<http:listener doc:name="/csv" doc:id="f5883cb6-3f5e-45f7-b4ae-aa776ad760a6" config-ref="HTTP_Listener_config" path="csv"/>
+		<file:read doc:name="Read" doc:id="a7d85742-fd18-4c7f-ba9c-22bb6be966e9" config-ref="File_Config" path="D:\Downloads\Mulesoft\Output\OutputFile.csv"/>
+		<ee:transform doc:name="Transform Message" doc:id="150b85a0-9deb-4d11-afdd-8a6c9147819b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv headerLineNumber = 0 , header = true , separator = ","
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	VIN: payload01.VIN,
+	Make: payload01.Make,
+	Model: payload01.Model,
+	Color: payload01.Color,
+	Registration: payload01.Registration
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="cf37d54a-72d7-4c8f-a5b3-5230e246edc4" message="#[payload]"/>
 	</flow>
 </mule>
