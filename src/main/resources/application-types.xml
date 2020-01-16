@@ -65,13 +65,17 @@ type: string]]></types:shape>
       </types:input-event>
     </types:processor-declaration>
   </types:enrichment>
-  <types:enrichment select="#150b85a0-9deb-4d11-afdd-8a6c9147819b">
+  <types:enrichment select="#13385f42-04e0-4daa-a0ba-5818dc68db08">
     <types:processor-declaration>
-      <types:input-event>
+      <types:output-event>
         <types:message>
           <types:payload type="CSV"/>
         </types:message>
-      </types:input-event>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#9dbce300-f157-46b1-abf2-913f3924513a">
+    <types:processor-declaration>
       <types:output-event>
         <types:message>
           <types:payload type="CSV"/>

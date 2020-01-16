@@ -16,18 +16,28 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 	<s3:config name="Amazon_S3_Configuration" doc:name="Amazon S3 Configuration" doc:id="5138cc6b-a857-44c8-b23a-15958aeb9748" >
 		<s3:basic-connection accessKey="AKIAV663W64TBG2RV7RB" secretKey="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" region="US_EAST_2"/>
 	</s3:config>
-	<flow name="efm-demo-s3csv2json" doc:id="a76aba61-436f-4b4b-ab33-4bbd4fb95477" >
-		<http:listener doc:name="/csv" doc:id="f5883cb6-3f5e-45f7-b4ae-aa776ad760a6" config-ref="HTTP_Listener_config" path="csv"/>
-		<s3:get-object doc:name="Get object" doc:id="a4ba7528-0f43-4606-a824-f1e12977a3f6" config-ref="Amazon_S3_Configuration" bucketName="hardie-efmdemo" key="Data_Folder/OutputFile.csv"/>
-		<logger level="INFO" doc:name="Logger" doc:id="a6371577-2728-4141-a176-31e5048c0479" message="#[payload]"/>
-		<ee:transform doc:name="Transform Message" doc:id="150b85a0-9deb-4d11-afdd-8a6c9147819b" >
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="98ee4245-c176-4925-a2d1-31a57d2af1a4" >
+		<salesforce:cached-basic-connection username="hardie@efmdemo.com" password="2mN7PU2cMr56*4u" securityToken="nWKUB7o1ownnacjB5FB6QfoZD" />
+	</salesforce:sfdc-config>
+	<flow name="efm-demoFlow" doc:id="5a782035-9e06-4bed-b744-60aeea6c37e2" >
+		<http:listener doc:name="Listener" doc:id="18c88d33-ab7a-4908-8a6b-103e9799cc79" config-ref="HTTP_Listener_config" path="/sfdcextract"/>
+		<salesforce:query doc:name="Query" doc:id="8e583300-d63a-412e-9f16-82eb72d14391" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query >Select vin__c, make__c, model__c, color__c, registration__c from vehicle__c</salesforce:salesforce-query>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="9dbce300-f157-46b1-abf2-913f3924513a" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
+output application/csv headerLineNumber = 0 , header = true , separator = ","
 ---
-payload]]></ee:set-payload>
+payload map ( payload01 , indexOfPayload01 ) -> {
+	VIN: payload01.VIN__c default "",
+	Make: payload01.Make__c default "",
+	Model: payload01.Model__c default "",
+	Color: payload01.Color__c default "",
+	Registration: payload01.Registration__c default ""
+}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<logger level="INFO" doc:name="Logger" doc:id="66bdc975-3aaa-4859-996f-1f35faf34b25" message="#[payload]"/>
+		<s3:create-object doc:name="Create object" doc:id="557b96e5-390c-4145-b1b2-5233706e98d8" config-ref="Amazon_S3_Configuration" bucketName="hardie-efmdemo" key="Data_Folder/SFDCOutput.csv"/>
 	</flow>
 </mule>
